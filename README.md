@@ -30,3 +30,7 @@ sudo -H -u root bash -c "/bin/bash <(curl https://raw.githubusercontent.com/arpa
 ### Post-installation
 
 In the MinIO Console Set the region to `ap-south-1`
+
+## License
+
+[GLWTS](/LICENSE)
