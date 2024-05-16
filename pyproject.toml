@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "minio-install"
+version = "0.1.0"
+description = ""
+authors = ["arpan <arpan.rec@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+ansible = "9.5.1"
+hvac = "^2.2.0"
+
+[tool.poetry.group.dev.dependencies]
+ansible-lint = { version = "24.5.0", markers = 'platform_system != "Windows"' }
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
