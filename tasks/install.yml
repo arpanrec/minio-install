@@ -1,0 +1,213 @@
+---
+- name: Minio | KES | Create group
+  ansible.builtin.group:
+      name: "{{ minio_kes_group }}"
+      state: present
+      system: true
+  register: minio_kes_tmp_group_creation
+
+- name: Minio | KES | Create User
+  ansible.builtin.user:
+      name: "{{ minio_kes_user }}"
+      group: "{{ minio_kes_group }}"
+      state: present
+      create_home: true
+      system: true
+      shell: /bin/false
+      home: "{{ minio_kes_home }}"
+  register: minio_kes_tmp_user_creation
+
+- name: Minio | Server | Create group
+  ansible.builtin.group:
+      name: "{{ minio_server_group }}"
+      state: present
+      system: true
+  register: minio_server_tmp_group_creation
+
+- name: Minio | Server | Create User
+  ansible.builtin.user:
+      name: "{{ minio_server_user }}"
+      group: "{{ minio_server_group }}"
+      state: present
+      create_home: true
+      system: true
+      shell: /bin/false
+      home: "{{ minio_server_home }}"
+  register: minio_server_tmp_user_creation
+
+- name: Minio | KES | Download binary
+  ansible.builtin.get_url:
+      dest: "/usr/local/bin/kes"
+      mode: "0755"
+      owner: root
+      group: root
+      checksum: "sha256:{{ minio_kes_bin_info_map[ansible_architecture]['sha256sum'][minio_kes_version] }}"
+      url: "https://github.com/minio/kes/releases/download/{{ minio_kes_version }}/kes-linux\
+          -{{ minio_kes_bin_info_map[ansible_architecture]['minio_kes_arch'] }}"
+
+- name: Minio | Server | Download binary
+  ansible.builtin.get_url:
+      dest: "/usr/local/bin/minio"
+      mode: "0755"
+      owner: root
+      group: root
+      checksum: "sha256:{{ minio_server_bin_info_map[ansible_architecture]['sha256sum'][minio_server_version] }}"
+      url: "https://dl.min.io/server/minio/release/linux-\
+          {{ minio_server_bin_info_map[ansible_architecture]['minio_server_arch'] }}/archive/minio.\
+          {{ minio_server_version }}"
+
+- name: Minio | Server | Create Directories
+  ansible.builtin.file:
+      path: "{{ item }}"
+      state: directory
+      owner: "{{ minio_server_user }}"
+      group: "{{ minio_server_group }}"
+      mode: "0777"
+  loop:
+      - "{{ minio_server_certs_dir }}"
+      - "{{ minio_server_certs_dir }}/CAs"
+      - "{{ minio_server_data_dir }}"
+
+- name: Minio | Server | Certs
+  ansible.builtin.import_tasks:
+      file: certs.yml
+
+- name: Minio | Server | Get Admin Key Id
+  ansible.builtin.command:
+      cmd: "/usr/local/bin/kes identity of {{ minio_server_kes_client_cert }}"
+  register: minio_kes_tmp_admin_key_id
+  changed_when: false
+
+- name: Minio | KES | Get role-id
+  become: false
+  delegate_facts: true
+  delegate_to: localhost
+  community.hashi_vault.vault_read:
+      url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
+      path: auth/approle/role/minio-kes/role-id
+      token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
+      validate_certs: true
+  register: minio_kes_tmp_vault_role_id
+  environment:
+      VAULT_CACERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
+      VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
+      VAULT_CLIENT_KEY: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[1] }}"
+
+- name: Minio | KES | Get secret-id
+  become: false
+  delegate_facts: true
+  delegate_to: localhost
+  community.hashi_vault.vault_write:
+      url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
+      path: "auth/approle/role/minio-kes/secret-id"
+      token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
+      validate_certs: true
+  register: minio_kes_tmp_vault_secret_id
+  environment:
+      VAULT_CACERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
+      VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
+      VAULT_CLIENT_KEY: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[1] }}"
+
+- name: Minio | KES | Create Config
+  ansible.builtin.set_fact:
+      minio_kes_config:
+          version: v1
+          address: "0.0.0.0:{{ minio_kes_port }}"
+          tls:
+              key: "{{ minio_kes_server_key }}"
+              cert: "{{ minio_kes_server_cert }}"
+              auth: "on"
+              ca: "{{ minio_kes_server_ca }}"
+          admin:
+              identity: "{{ minio_kes_tmp_admin_key_id.stdout }}"
+          log:
+              error: "on"
+              audit: "on"
+          api:
+              "/v1/ready":
+                  skip_auth: false
+                  timeout: 15s
+          policy:
+              minio:
+                  allow:
+                      - /v1/key/create/*
+                      - /v1/key/generate/*
+                      - /v1/key/decrypt/*
+                      - /v1/key/bulk/decrypt
+                      - /v1/key/list/*
+                      - /v1/status
+                      - /v1/metrics
+                      - /v1/log/audit
+                      - /v1/log/error
+          keystore:
+              vault:
+                  endpoint: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
+                  engine: "minio-kes"
+                  version: "v2"
+                  approle:
+                      id: "{{ minio_kes_tmp_vault_role_id.data.data.role_id }}"
+                      secret: "{{ minio_kes_tmp_vault_secret_id.data.data.secret_id }}"
+                  tls:
+                      key: "{{ minio_kes_vault_client_key }}"
+                      cert: "{{ minio_kes_vault_client_cert }}"
+                      ca: "{{ minio_kes_vault_ca_cert }}"
+                  status:
+                      ping: 10s
+
+- name: Minio | Server | Create Env File
+  ansible.builtin.copy:
+      content: |+
+          MINIO_KMS_KES_ENDPOINT=https://{{ minio_kes_hostname }}:{{ minio_kes_port }}
+          MINIO_KMS_KES_KEY_FILE={{ minio_server_kes_client_key }}
+          MINIO_KMS_KES_CERT_FILE={{ minio_server_kes_client_cert }}
+          MINIO_KMS_KES_CAPATH={{ minio_server_kes_client_ca }}
+          MINIO_KMS_KES_KEY_NAME=default
+          MINIO_ROOT_USER={{ minio_server_root_user }}
+          MINIO_ROOT_PASSWORD={{ minio_server_root_password }}
+          MINIO_REGION=us-east-1
+          MINIO_VOLUMES={{ minio_server_data_dir }}
+          MINIO_OPTS="--address ':{{ minio_server_port }}' --console-address ':{{ minio_server_console_port }}' --certs-dir {{ minio_server_certs_dir }}"
+      dest: "{{ minio_env_file }}"
+      owner: "{{ minio_server_user }}"
+      group: "{{ minio_server_group }}"
+      mode: "0777"
+
+- name: Minio | KES | Write Config
+  ansible.builtin.copy:
+      content: "---\n{{ minio_kes_config | to_nice_yaml(sort_keys=false) }}"
+      dest: "{{ minio_kes_config_file }}"
+      owner: "{{ minio_kes_user }}"
+      group: "{{ minio_kes_group }}"
+      mode: "0777"
+
+- name: Minio | Server | Enable UFW
+  community.general.ufw:
+      rule: allow
+      port: "{{ item }}"
+      proto: tcp
+      comment: "Minio Server"
+  loop:
+      - "{{ minio_server_port }}"
+      - "{{ minio_server_console_port }}"
+
+- name: Minio | KES/Server | Create Systemd Service
+  ansible.builtin.template:
+      src: "templates/{{ item }}.j2"
+      dest: "/etc/systemd/system/{{ item }}"
+      owner: root
+      group: root
+      mode: "0644"
+  loop:
+      - "{{ minio_kes_systemd_service_name }}"
+      - "{{ minio_server_systemd_service_name }}"
+
+- name: Minio | KES/Server | Start Systemd Service
+  ansible.builtin.systemd_service:
+      name: "{{ item }}"
+      state: restarted
+      daemon_reload: true
+      daemon_reexec: true
+      enabled: true
+  loop:
+      - "{{ minio_kes_systemd_service_name }}"
+      - "{{ minio_server_systemd_service_name }}"
