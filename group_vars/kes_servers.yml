@@ -15,9 +15,7 @@ minio_kes_vault_ca_cert: "{{ minio_kes_home }}/vault-ca.crt"
 minio_kes_systemd_service_name: kes.service
 minio_kes_container_name: minio-kes
 minio_kes_hostnames: ["localhost"]
-minio_kes_hostname: "{{ minio_kes_hostnames | first }}"
 minio_kes_ips: ["127.0.0.1"]
-minio_kes_ip: "{{ minio_kes_ips | first }}"
 minio_kes_port: 7373
 
 minio_kes_bin_info_map:
