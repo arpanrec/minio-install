@@ -2,7 +2,7 @@
 - name: Prepare
   hosts: kes_servers
   gather_facts: true
-  tags: always
+  tags: never,kes_install
   become: true
   timeout: 30
   gather_timeout: 30
