@@ -1,0 +1,7 @@
+---
+- name: KES | Install | Create group
+  ansible.builtin.group:
+      name: "{{ minio_kes_group }}"
+      state: present
+      system: true
+  register: minio_kes_tmp_group_creation

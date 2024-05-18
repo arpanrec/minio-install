@@ -6,11 +6,11 @@ minio_kes_config_file: "{{ minio_kes_home }}/kes-config.yml"
 
 minio_kes_server_key: "{{ minio_kes_home }}/kes-server.key"
 minio_kes_server_cert: "{{ minio_kes_home }}/kes-server.crt"
-minio_kes_server_ca: "{{ minio_kes_server_cert }}"
+minio_kes_server_ca: "{{ minio_kes_home }}/kes-server-ca.crt"
 
 minio_kes_vault_client_cert: "{{ minio_kes_home }}/vault-client.crt"
 minio_kes_vault_client_key: "{{ minio_kes_home }}/vault-client.key"
-minio_kes_vault_ca_cert: "{{ minio_kes_vault_client_cert }}"
+minio_kes_vault_ca_cert: "{{ minio_kes_home }}/vault-ca.crt"
 
 minio_kes_systemd_service_name: kes.service
 minio_kes_container_name: minio-kes

@@ -1,6 +1,6 @@
 ---
 - name: Prepare
-  hosts: minio_servers
+  hosts: vaultops
   gather_facts: true
   tags: always
   become: true
