@@ -1,38 +1,4 @@
 ---
-minio_kes_group: kes
-minio_kes_user: "{{ minio_kes_group }}"
-minio_kes_home: "/opt/{{ minio_kes_user }}"
-minio_kes_config_file: "{{ minio_kes_home }}/kes-config.yml"
-
-minio_kes_server_key: "{{ minio_kes_home }}/kes-server.key"
-minio_kes_server_cert: "{{ minio_kes_home }}/kes-server.crt"
-minio_kes_server_ca: "{{ minio_kes_home }}/kes-server-ca.crt"
-
-minio_kes_vault_client_cert: "{{ minio_kes_home }}/vault-client.crt"
-minio_kes_vault_client_key: "{{ minio_kes_home }}/vault-client.key"
-minio_kes_vault_ca_cert: "{{ minio_kes_home }}/vault-ca.crt"
-
-minio_kes_systemd_service_name: kes.service
-minio_kes_container_name: minio-kes
-minio_kes_hostnames: ["localhost"]
-minio_kes_hostname: "{{ minio_kes_hostnames | first }}"
-minio_kes_ips: ["127.0.0.1"]
-minio_kes_ip: "{{ minio_kes_ips | first }}"
-minio_kes_port: 7373
-
-minio_kes_bin_info_map:
-    x86_64:
-        minio_kes_arch: amd64
-        sha256sum:
-            "2024-04-12T13-50-00Z": 1549cadb384c093ab7a9b778006a60063884b31311fc7cafd3c92f2145b9a916
-    aarch64:
-        minio_kes_arch: arm64
-        sha256sum:
-            "2024-04-12T13-50-00Z": 251d7182df96b111008ff98f4c6bdb3b3e06ef9ea2d3b6c9fcbea9a8a80579cd
-minio_kes_version: 2024-04-12T13-50-00Z
-
-############
-
 minio_server_group: minio
 minio_server_user: "{{ minio_server_group }}"
 minio_server_home: "/opt/{{ minio_server_user }}"

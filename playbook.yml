@@ -1,16 +1,16 @@
 ---
 - name: Prepare
-  hosts: vaultops
+  hosts: kes_servers
   gather_facts: true
   tags: always
   become: true
   timeout: 30
   gather_timeout: 30
   tasks:
-      - name: Minio | KES/Server | Assert
+      - name: KES | Assert
         ansible.builtin.import_tasks:
-            file: tasks/asserts.yml
+            file: tasks/kes_asserts.yml
 
       - name: Minio | KES/Server | Install
         ansible.builtin.import_tasks:
-            file: tasks/install.yml
+            file: tasks/kes_install.yml
