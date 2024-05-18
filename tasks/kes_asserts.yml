@@ -1,0 +1,14 @@
+---
+- name: KES | Assert | minio_kes_hostnames
+  ansible.builtin.assert:
+      that:
+          - minio_kes_hostnames | type_debug == 'list'
+          - minio_kes_hostnames | length > 0
+      fail_msg: "minio_kes_hostnames must be a list with at least one element"
+
+- name: KES | Assert | minio_kes_ips
+  ansible.builtin.assert:
+      that:
+          - minio_kes_ips | type_debug == 'list'
+          - minio_kes_ips | length > 0
+      fail_msg: "minio_kes_ips must be a list with at least one element"

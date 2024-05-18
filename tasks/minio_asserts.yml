@@ -1,0 +1,43 @@
+---
+- name: Minio | Assert | minio_server_hostnames
+  ansible.builtin.assert:
+      that:
+          - minio_server_hostnames | type_debug == 'list'
+          - minio_server_hostnames | length > 0
+      fail_msg: "minio_server_hostnames must be a list with at least one element"
+
+- name: Minio | Assert | minio_server_ips
+  ansible.builtin.assert:
+      that:
+          - minio_server_ips | type_debug == 'list'
+          - minio_server_ips | length > 0
+      fail_msg: "minio_server_ips must be a list with at least one element"
+
+- name: Minio | Assert | minio_server_root_user
+  ansible.builtin.assert:
+      that:
+          - minio_server_root_user | type_debug in ['string', 'AnsibleUnicode']
+          - minio_server_root_user | length > 5
+      fail_msg: "minio_server_root_user must be a non-empty string"
+
+- name: Minio | Assert | minio_server_root_password
+  ansible.builtin.assert:
+      that:
+          - minio_server_root_password | type_debug in ['string', 'AnsibleUnicode']
+          - minio_server_root_password | length > 12
+      fail_msg: minio_server_root_password must be a non-empty string and should contain at least one lowercase letter,
+          one uppercase letter, one digit, one special character and should be at least 12 characters long
+
+- name: Minio | Assert | minio_server_kes_endpoint hostname
+  ansible.builtin.assert:
+      that:
+          - |+
+              minio_server_kes_endpoint | urlsplit('hostname')
+              in
+              (minio_server_kes_secret_dict.secret.hostnames + minio_server_kes_secret_dict.secret.ips)
+      fail_msg: "minio_server_kes_endpoint must be a valid URL with hostname or IP address"
+
+- name: Minio | Assert | minio_server_kes_endpoint port
+  ansible.builtin.assert:
+      that:
+          - minio_server_kes_endpoint | urlsplit('port') == minio_server_kes_secret_dict.secret.port

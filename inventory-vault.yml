@@ -5,3 +5,4 @@ hvac_client_auth_method: "userpass"
 hvac_client_auth_config: "@inv/hvac_client_auth_config.yaml"
 hvac_kv2_mount_point: vault-secrets
 hvac_kv2_path: vault_secrets/ansible_inventory
+add_hvac_client_to_inventory: true
