@@ -257,6 +257,13 @@
       group: root
       mode: "0644"
 
+- name: KES | Install | Enable UFW
+  community.general.ufw:
+      rule: allow
+      port: "{{ minio_kes_port }}"
+      proto: tcp
+      state: enabled
+
 - name: KES | Install | Start Systemd Service
   ansible.builtin.systemd_service:
       name: "{{ minio_kes_systemd_service_name }}"
