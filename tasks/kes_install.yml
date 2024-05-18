@@ -11,11 +11,18 @@
       name: "{{ minio_kes_user }}"
       group: "{{ minio_kes_group }}"
       state: present
-      create_home: true
+      create_home: false
       system: true
       shell: /bin/false
-      home: "{{ minio_kes_home }}"
   register: minio_kes_tmp_user_creation
+
+- name: KES | Install | Create Directories
+  ansible.builtin.file:
+      path: "{{ minio_kes_home }}"
+      state: directory
+      owner: "{{ minio_kes_user }}"
+      group: "{{ minio_kes_group }}"
+      mode: "0777"
 
 - name: KES | Install | Download binary
   ansible.builtin.get_url:
@@ -46,42 +53,6 @@
       VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
       VAULT_CLIENT_KEY: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[1] }}"
 
-- name: KES | Install | Admin Client Certificate
-  become: false
-  delegate_facts: true
-  delegate_to: localhost
-  community.hashi_vault.vault_write:
-      url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
-      path: pki/issue/client_certificate
-      token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
-      validate_certs: true
-      data:
-          common_name: "{{ inventory_hostname }}"
-          alt_names: "{{ minio_kes_hostnames | join(',') }}"
-          ip_sans: "{{ minio_kes_ips | join(',') }}"
-  register: kes_tmp_admin_client_cert_res
-  environment:
-      VAULT_CACERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
-      VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
-      VAULT_CLIENT_KEY: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[1] }}"
-
-- name: KES | Install | Vault Client Certificate
-  become: false
-  delegate_facts: true
-  delegate_to: localhost
-  community.hashi_vault.vault_write:
-      url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
-      path: pki/issue/vault_client_certificate
-      token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
-      validate_certs: true
-      data:
-          common_name: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url | urlsplit('hostname') }}"
-  register: kes_tmp_vault_client_cert
-  environment:
-      VAULT_CACERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
-      VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
-      VAULT_CLIENT_KEY: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[1] }}"
-
 - name: KES | Install | Write Server Certificate
   ansible.builtin.copy:
       content: "{{ item.content }}"
@@ -104,6 +75,33 @@
         owner: "{{ minio_kes_user }}"
         group: "{{ minio_kes_group }}"
 
+- name: KES | Install | Admin Client Certificate
+  become: false
+  delegate_facts: true
+  delegate_to: localhost
+  community.hashi_vault.vault_write:
+      url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
+      path: pki/issue/client_certificate
+      token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
+      validate_certs: true
+      data:
+          common_name: "{{ inventory_hostname }}"
+          alt_names: "{{ minio_kes_hostnames | join(',') }}"
+          ip_sans: "{{ minio_kes_ips | join(',') }}"
+  register: kes_tmp_admin_client_cert_res
+  environment:
+      VAULT_CACERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
+      VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
+      VAULT_CLIENT_KEY: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[1] }}"
+
+- name: KES | Install | Write Admin Client Certificate
+  ansible.builtin.copy:
+      content: "{{ item.content }}"
+      dest: "{{ item.dest }}"
+      owner: "{{ item.owner }}"
+      group: "{{ item.group }}"
+      mode: "0777"
+  loop:
       - content: "{{ kes_tmp_admin_client_cert_res.data.data.certificate }}\n\
             {{ kes_tmp_admin_client_cert_res.data.data.ca_chain | join('\n') }}"
         dest: "/tmp/kes-admin-client-cert.pem"
@@ -118,6 +116,31 @@
       #   owner: "{{ minio_kes_user }}"
       #   group: "{{ minio_kes_group }}"
 
+- name: KES | Install | Vault Client Certificate
+  become: false
+  delegate_facts: true
+  delegate_to: localhost
+  community.hashi_vault.vault_write:
+      url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
+      path: pki/issue/vault_client_certificate
+      token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
+      validate_certs: true
+      data:
+          common_name: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url | urlsplit('hostname') }}"
+  register: kes_tmp_vault_client_cert
+  environment:
+      VAULT_CACERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
+      VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
+      VAULT_CLIENT_KEY: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[1] }}"
+
+- name: KES | Install | Write Vault Client Certificate
+  ansible.builtin.copy:
+      content: "{{ item.content }}"
+      dest: "{{ item.dest }}"
+      owner: "{{ item.owner }}"
+      group: "{{ item.group }}"
+      mode: "0777"
+  loop:
       - content: "{{ kes_tmp_vault_client_cert.data.data.certificate }}\n\
             {{ kes_tmp_vault_client_cert.data.data.ca_chain | join('\n') }}"
         dest: "{{ minio_kes_vault_client_cert }}"
@@ -181,12 +204,12 @@
       url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
       path: "minio-kes/admin-key-id/{{ inventory_hostname }}"
       data:
-          admin_key_id: "{{ minio_kes_tmp_admin_key_id.stdout }}"
-          admin_cert: "{{ minio_kes_tmp_server_cert.data.data.certificate }}\n\
-              {{ minio_kes_tmp_server_cert.data.data.ca_chain | join('\n') }}"
-          admin_key: "{{ minio_kes_tmp_server_cert.data.data.private_key }}"
-          admin_ca: "{{ minio_kes_tmp_server_cert.data.data.ca_chain | join('\n') }}"
+          admin_cert: "{{ kes_tmp_admin_client_cert_res.data.data.certificate }}\n\
+              {{ kes_tmp_admin_client_cert_res.data.data.ca_chain | join('\n') }}"
+          admin_key: "{{ kes_tmp_admin_client_cert_res.data.data.private_key }}"
+          admin_ca: "{{ kes_tmp_admin_client_cert_res.data.data.ca_chain | join('\n') }}"
           ips: "{{ minio_kes_ips }}"
+          port: "{{ minio_kes_port }}"
           hostnames: "{{ minio_kes_hostnames }}"
       token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
       validate_certs: true
@@ -259,7 +282,7 @@
 
 - name: KES | Install | Enable UFW
   community.general.ufw:
-      rule: reject
+      rule: allow
       port: "{{ minio_kes_port }}"
       proto: tcp
       state: enabled

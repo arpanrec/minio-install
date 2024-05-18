@@ -28,7 +28,6 @@ collections:
     - name: arpanrec.nebula
       type: git
       source: https://github.com/arpanrec/arpanrec.nebula.git
-      version: feature/inprogress
 
     - name: community.hashi_vault
       type: git

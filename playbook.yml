@@ -1,16 +1,84 @@
 ---
-- name: Prepare
+- name: KES
   hosts: kes_servers
   gather_facts: true
-  tags: never,kes_install
   become: true
   timeout: 30
   gather_timeout: 30
+  any_errors_fatal: true
   tasks:
       - name: KES | Assert
+        tags:
+            - never
+            - kes_install
         ansible.builtin.import_tasks:
             file: tasks/kes_asserts.yml
 
-      - name: Minio | KES/Server | Install
+      - name: KES | Install
+        tags:
+            - never
+            - kes_install
         ansible.builtin.import_tasks:
             file: tasks/kes_install.yml
+
+      - name: KES | Uninstall
+        tags:
+            - never
+            - kes_uninstall
+        ansible.builtin.import_tasks:
+            file: tasks/kes_uninstall.yml
+
+- name: Minio
+  hosts: minio_servers
+  gather_facts: true
+  become: true
+  timeout: 30
+  gather_timeout: 30
+  any_errors_fatal: true
+  tasks:
+      - name: Minio | Set minio_server_kes_secret_id_vault
+        tags:
+            - never
+            - minio_install
+        ansible.builtin.set_fact:
+            minio_server_kes_secret_id_vault: "{{ minio_server_kes_secret_id_vault | d(inventory_hostname)
+                | mandatory }}"
+
+      - name: Minio | Get KES Admin Key Id from Vault
+        tags:
+            - never
+            - minio_install
+        become: false
+        delegate_facts: true
+        delegate_to: localhost
+        community.hashi_vault.vault_kv2_get:
+            url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
+            path: "minio-kes/admin-key-id/{{ minio_server_kes_secret_id_vault }}"
+            token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
+            validate_certs: true
+        register: minio_server_kes_secret_dict
+        environment:
+            VAULT_CACERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
+            VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
+            VAULT_CLIENT_KEY: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[1] }}"
+
+      - name: Minio | Assert
+        tags:
+            - never
+            - minio_install
+        ansible.builtin.import_tasks:
+            file: tasks/minio_asserts.yml
+
+      - name: Minio | Install
+        tags:
+            - never
+            - minio_install
+        ansible.builtin.import_tasks:
+            file: tasks/minio_install.yml
+
+      - name: Minio | Uninstall
+        tags:
+            - never
+            - minio_uninstall
+        ansible.builtin.import_tasks:
+            file: tasks/minio_uninstall.yml

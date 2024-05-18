@@ -1,0 +1,54 @@
+---
+- name: Minio | Uninstall | Stop Systemd Service
+  ansible.builtin.systemd_service:
+      name: "{{ minio_server_systemd_service_name }}"
+      state: stopped
+      daemon_reload: true
+      daemon_reexec: true
+      enabled: false
+      force: true
+  register: minio_server_systemd_service_removed
+  failed_when: |+
+      minio_server_systemd_service_removed.failed
+      and
+      minio_server_systemd_service_removed.msg.find('Could not find the requested service') == -1
+
+- name: Minio | Uninstall | Remove UFW
+  community.general.ufw:
+      rule: reject
+      port: "{{ item }}"
+      proto: tcp
+      state: enabled
+  loop:
+      - "{{ minio_server_port }}"
+      - "{{ minio_server_console_port }}"
+
+- name: Minio | Uninstall | Remove Files
+  ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+      force: true
+  loop:
+      - "/etc/systemd/system/{{ minio_server_systemd_service_name }}"
+      - "/usr/local/bin/minio"
+      - "{{ minio_env_file }}"
+      - "{{ minio_server_certs_dir }}"
+
+- name: Minio | Uninstall | Delete User
+  ansible.builtin.user:
+      name: "{{ minio_server_user }}"
+      state: absent
+      force: true
+
+- name: Minio | Uninstall | Delete group
+  ansible.builtin.group:
+      name: "{{ minio_server_group }}"
+      state: absent
+      force: true
+
+- name: Minio | Uninstall | Remove data directory
+  when: minio_server_uninstall_remove_data_dir is defined and minio_server_uninstall_remove_data_dir | bool
+  ansible.builtin.file:
+      path: "{{ minio_server_data_dir }}"
+      state: absent
+      force: true

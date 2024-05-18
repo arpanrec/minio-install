@@ -17,11 +17,11 @@ minio_server_ca: "{{ minio_server_certs_dir }}/CAs/server-ca.crt"
 minio_server_container_name: minio-server
 
 minio_server_hostnames: ["localhost"]
-minio_server_hostname: "{{ minio_server_hostnames | first }}"
 minio_server_ips: ["127.0.0.1"]
-minio_server_ip: "{{ minio_server_ips | first }}"
 minio_server_port: 9000
 minio_server_console_port: 9001
+# minio_server_kes_secret_id_vault: "{{ minio_server_kes_secret_id_vault | d('inventory_hostname') | mandatory }}"
+minio_server_kes_endpoint: "https://127.0.0.1:7373"
 # minio_server_root_user:
 # minio_server_root_password:
 minio_server_systemd_service_name: minio.service
