@@ -202,7 +202,7 @@
   delegate_to: localhost
   community.hashi_vault.vault_kv2_write:
       url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
-      path: "minio-kes/{{ inventory_hostname }}/admin-key-id"
+      path: "minio/kes/servers/{{ inventory_hostname }}/config"
       engine_mount_point: "secret"
       data:
           admin_cert: "{{ kes_tmp_admin_client_cert_res.data.data.certificate }}\n\
@@ -253,8 +253,9 @@
           keystore:
               vault:
                   endpoint: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
-                  engine: "minio-kes"
-                  version: "v2"
+                  engine: "kv"
+                  version: "v1"
+                  prefix: "minio/kes/kms"
                   approle:
                       id: "{{ minio_kes_tmp_vault_role_id.data.data.role_id }}"
                       secret: "{{ minio_kes_tmp_vault_secret_id.data.data.secret_id }}"

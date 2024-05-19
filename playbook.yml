@@ -67,7 +67,8 @@
         delegate_to: localhost
         community.hashi_vault.vault_kv2_get:
             url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
-            path: "minio-kes/{{ minio_server_kes_secret_id_vault }}/admin-key-id"
+            engine_mount_point: "secret"
+            path: "minio/kes/servers/{{ minio_server_kes_secret_id_vault }}/config"
             token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
             validate_certs: true
         register: minio_server_kes_secret_dict

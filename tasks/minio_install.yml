@@ -95,8 +95,8 @@
 
 - name: Minio | Install | Create User and Password
   ansible.builtin.set_fact:
-      minio_server_root_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=20,
-          chars=['ascii_letters', 'digits', 'punctuation']) }}"
+      minio_server_root_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=40,
+          chars=['ascii_letters', 'digits']) }}"
       minio_server_root_user: "{{ lookup('community.general.random_string', special=false, length=12) }}"
 
 - name: Minio | Install | Write the Password to Vault
@@ -105,13 +105,17 @@
   delegate_to: localhost
   community.hashi_vault.vault_kv2_write:
       url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
-      path: "minio-servers/{{ inventory_hostname }}/root-user"
+      path: "minio/servers/{{ inventory_hostname }}/config"
       token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
       validate_certs: true
       engine_mount_point: "secret"
       data:
           root_user: "{{ minio_server_root_user }}"
           root_password: "{{ minio_server_root_password }}"
+          ips: "{{ minio_server_ips }}"
+          hostnames: "{{ minio_server_hostnames }}"
+          port: "{{ minio_server_port }}"
+          console_port: "{{ minio_server_console_port }}"
   environment:
       VAULT_CACERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
       VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
