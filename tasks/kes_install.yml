@@ -236,8 +236,8 @@
           keystore:
               vault:
                   endpoint: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
-                  engine: "kv"
-                  version: "v1"
+                  engine: "secret" # "kv"
+                  version: "v2" # "v1"
                   prefix: "minio/kes/kms"
                   approle:
                       id: "{{ minio_kes_tmp_vault_role_id.data.data.role_id }}"
