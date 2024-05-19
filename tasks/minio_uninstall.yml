@@ -31,8 +31,10 @@
   loop:
       - "/etc/systemd/system/{{ minio_server_systemd_service_name }}"
       - "/usr/local/bin/minio"
+      - "/usr/local/bin/mc"
       - "{{ minio_env_file }}"
       - "{{ minio_server_certs_dir }}"
+      - "{{ minio_mc_config_dir }}"
 
 - name: Minio | Uninstall | Delete User
   ansible.builtin.user:

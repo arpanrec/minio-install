@@ -1,4 +1,7 @@
 ---
+- name: Minio | Install | Gather Facts
+  ansible.builtin.setup:
+
 - name: Minio | Install | Create group
   ansible.builtin.group:
       name: "{{ minio_server_group }}"
@@ -27,6 +30,17 @@
           {{ minio_server_bin_info_map[ansible_architecture]['minio_server_arch'] }}/archive/minio.\
           {{ minio_server_version }}"
 
+- name: Minio | Install | Download mc
+  ansible.builtin.get_url:
+      dest: "/usr/local/bin/mc"
+      mode: "0755"
+      owner: root
+      group: root
+      checksum: "sha256:{{ minio_mc_bin_info_map[ansible_architecture]['sha256sum'][minio_mc_version] }}"
+      url: "https://dl.min.io/client/mc/release/linux-\
+          {{ minio_mc_bin_info_map[ansible_architecture]['minio_server_arch'] }}/archive/mc.\
+          {{ minio_mc_version }}"
+
 - name: Minio | Install | Create Directories
   ansible.builtin.file:
       path: "{{ item }}"
@@ -38,8 +52,9 @@
       - "{{ minio_server_certs_dir }}"
       - "{{ minio_server_certs_dir }}/CAs"
       - "{{ minio_server_data_dir }}"
+      - "{{ minio_mc_config_dir }}/certs/CAs"
 
-- name: Minio | Install | Minio Server Certificate
+- name: Minio | Install | Get Minio Server Certificates from Vault
   become: false
   delegate_facts: true
   delegate_to: localhost
@@ -58,40 +73,44 @@
       VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
       VAULT_CLIENT_KEY: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[1] }}"
 
-- name: Minio | Install | Write Server Certificate
+- name: Minio | Install | Write Server Certificates
   ansible.builtin.copy:
       content: "{{ item.content }}"
       dest: "{{ item.dest }}"
-      owner: "{{ item.owner }}"
-      group: "{{ item.group }}"
+      owner: "{{ minio_server_user }}"
+      group: "{{ minio_server_group }}"
       mode: "0777"
   loop:
       - content: "{{ minio_server_tmp_certificate.data.data.certificate }}\n\
             {{ minio_server_tmp_certificate.data.data.ca_chain | join('\n') }}"
         dest: "{{ minio_server_cert }}"
-        owner: "{{ minio_server_user }}"
-        group: "{{ minio_server_group }}"
       - content: "{{ minio_server_tmp_certificate.data.data.private_key }}"
         dest: "{{ minio_server_key }}"
-        owner: "{{ minio_server_user }}"
-        group: "{{ minio_server_group }}"
       - content: "{{ minio_server_tmp_certificate.data.data.ca_chain | join('\n') }}"
         dest: "{{ minio_server_ca }}"
-        owner: "{{ minio_server_user }}"
-        group: "{{ minio_server_group }}"
 
+- name: Minio | Install | Write KES Client Admin Certificates
+  ansible.builtin.copy:
+      content: "{{ item.content }}"
+      dest: "{{ item.dest }}"
+      owner: "{{ minio_server_user }}"
+      group: "{{ minio_server_group }}"
+      mode: "0777"
+  loop:
       - content: "{{ minio_server_kes_secret_dict.secret.admin_cert }}\n"
         dest: "{{ minio_server_kes_client_cert }}"
-        owner: "{{ minio_server_user }}"
-        group: "{{ minio_server_group }}"
       - content: "{{ minio_server_kes_secret_dict.secret.admin_key }}\n"
         dest: "{{ minio_server_kes_client_key }}"
-        owner: "{{ minio_server_user }}"
-        group: "{{ minio_server_group }}"
       - content: "{{ minio_server_kes_secret_dict.secret.admin_ca }}\n"
         dest: "{{ minio_server_kes_client_ca }}"
-        owner: "{{ minio_server_user }}"
-        group: "{{ minio_server_group }}"
+
+- name: Minio | Install | Write MC Certificates
+  ansible.builtin.copy:
+      content: "{{ minio_server_tmp_certificate.data.data.ca_chain | join('\n') }}"
+      dest: "{{ minio_mc_config_dir }}/certs/CAs/server-ca.crt"
+      owner: "{{ minio_server_user }}"
+      group: "{{ minio_server_group }}"
+      mode: "0777"
 
 - name: Minio | Install | Create User and Password
   ansible.builtin.set_fact:
@@ -116,6 +135,8 @@
           hostnames: "{{ minio_server_hostnames }}"
           port: "{{ minio_server_port }}"
           console_port: "{{ minio_server_console_port }}"
+          server_version: "{{ minio_server_version }}"
+          client_version: "{{ minio_mc_version }}"
   environment:
       VAULT_CACERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
       VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"

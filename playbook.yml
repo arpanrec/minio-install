@@ -8,11 +8,6 @@
   any_errors_fatal: true
   no_log: "{{ not pv_global_config_env_debug | bool | default(false) }}"
   tasks:
-      - name: KES | Gather Facts
-        tags:
-            - never
-            - kes_install
-        ansible.builtin.setup:
 
       - name: KES | Assert
         tags:
@@ -44,43 +39,11 @@
   any_errors_fatal: true
   no_log: "{{ not pv_global_config_env_debug | bool | default(false) }}"
   tasks:
-      - name: Minio | Gather Facts
-        tags:
-            - never
-            - minio_install
-        ansible.builtin.setup:
-
-      - name: Minio | Set minio_server_kes_secret_id_vault
-        tags:
-            - never
-            - minio_install
-        ansible.builtin.set_fact:
-            minio_server_kes_secret_id_vault: "{{ minio_server_kes_secret_id_vault | d(inventory_hostname)
-                | mandatory }}"
-
-      - name: Minio | Get KES Admin Key Id from Vault
-        tags:
-            - never
-            - minio_install
-        become: false
-        delegate_facts: true
-        delegate_to: localhost
-        community.hashi_vault.vault_kv2_get:
-            url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
-            engine_mount_point: "secret"
-            path: "minio/kes/servers/{{ minio_server_kes_secret_id_vault }}/config"
-            token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
-            validate_certs: true
-        register: minio_server_kes_secret_dict
-        environment:
-            VAULT_CACERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
-            VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
-            VAULT_CLIENT_KEY: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[1] }}"
-
       - name: Minio | Assert
         tags:
             - never
             - minio_install
+            - kes_install
         ansible.builtin.import_tasks:
             file: tasks/minio_asserts.yml
 
@@ -88,6 +51,7 @@
         tags:
             - never
             - minio_install
+            - kes_install
         ansible.builtin.import_tasks:
             file: tasks/minio_install.yml
 

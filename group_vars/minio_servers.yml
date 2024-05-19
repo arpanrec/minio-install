@@ -36,3 +36,15 @@ minio_server_bin_info_map:
         sha256sum:
             "RELEASE.2024-05-10T01-41-38Z": b830c0862eadd2adb0db07118858fb917ac8002a9fde7a8eb0cc5234699ba40d
 minio_server_version: RELEASE.2024-05-10T01-41-38Z
+
+minio_mc_bin_info_map:
+    x86_64:
+        minio_server_arch: amd64
+        sha256sum:
+            "RELEASE.2024-05-09T17-04-24Z": 360196aa51e7664996abbd3a522bdf4749188744a4d36d9bc0c4068d7dfad9e2
+    aarch64:
+        minio_server_arch: arm64
+        sha256sum:
+            "RELEASE.2024-05-09T17-04-24Z": 3af6501fd9b36780ce6715290f84458480eada7ff4ca4d26a593ec04592bbf3d
+minio_mc_version: RELEASE.2024-05-09T17-04-24Z
+minio_mc_config_dir: "{{ minio_server_home }}/.mc"

@@ -1,4 +1,25 @@
 ---
+- name: Minio | Assert | Set minio_server_kes_secret_id_vault
+  ansible.builtin.set_fact:
+      minio_server_kes_secret_id_vault: "{{ minio_server_kes_secret_id_vault | d(inventory_hostname)
+          | mandatory }}"
+
+- name: Minio | Assert | Get KES Admin Key Id from Vault
+  become: false
+  delegate_facts: true
+  delegate_to: localhost
+  community.hashi_vault.vault_kv2_get:
+      url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
+      engine_mount_point: "secret"
+      path: "minio/kes/servers/{{ minio_server_kes_secret_id_vault }}/config"
+      token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
+      validate_certs: true
+  register: minio_server_kes_secret_dict
+  environment:
+      VAULT_CACERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
+      VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
+      VAULT_CLIENT_KEY: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[1] }}"
+
 - name: Minio | Assert | minio_server_hostnames
   ansible.builtin.assert:
       that:
