@@ -96,6 +96,10 @@
       state: file
   register: kes_tmp_admin_client_cert_tmp_file
 
+- name: KES | Install | Debug Temp File
+  ansible.builtin.debug:
+      var: kes_tmp_admin_client_cert_tmp_file
+
 - name: KES | Install | Write Admin Client Certificate
   ansible.builtin.copy:
       content: "{{ kes_tmp_admin_client_cert_res.data.data.certificate }}\n\
