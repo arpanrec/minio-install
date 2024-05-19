@@ -38,7 +38,7 @@
       hostname: "{{ minio_server_container_name }}"
       user: "{{ minio_server_tmp_user_creation.uid }}:{{ minio_server_tmp_group_creation.gid }}"
       volumes:
-          - "{{ minio_server_home }}:{{ minio_server_home }}"
+          - "{{ minio_server_opt_dir }}:{{ minio_server_opt_dir }}"
       networks:
           - name: miniokes
       ports:

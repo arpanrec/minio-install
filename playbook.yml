@@ -8,7 +8,6 @@
   any_errors_fatal: true
   no_log: "{{ not pv_global_config_env_debug | bool | default(false) }}"
   tasks:
-
       - name: KES | Assert
         tags:
             - never
@@ -54,6 +53,17 @@
             - kes_install
         ansible.builtin.import_tasks:
             file: tasks/minio_install.yml
+
+      - name: Minio | MC
+        tags:
+            - never
+            - minio_install
+            - kes_install
+            - mc_install
+        become: true
+        become_user: "{{ minio_server_user }}"
+        ansible.builtin.import_tasks:
+            file: tasks/mc.yml
 
       - name: Minio | Uninstall
         tags:

@@ -35,6 +35,7 @@
       - "{{ minio_env_file }}"
       - "{{ minio_server_certs_dir }}"
       - "{{ minio_mc_config_dir }}"
+      - "{{ minio_server_home_dir }}"
 
 - name: Minio | Uninstall | Delete User
   ansible.builtin.user:

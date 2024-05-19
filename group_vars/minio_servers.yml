@@ -1,10 +1,11 @@
 ---
 minio_server_group: minio
 minio_server_user: "{{ minio_server_group }}"
-minio_server_home: "/opt/{{ minio_server_user }}"
-minio_server_certs_dir: "{{ minio_server_home }}/certs"
-minio_server_data_dir: "{{ minio_server_home }}/data"
-minio_env_file: "{{ minio_server_home }}/minio.env"
+minio_server_home_dir: "/home/{{ minio_server_user }}"
+minio_server_opt_dir: "/opt/{{ minio_server_user }}"
+minio_server_certs_dir: "{{ minio_server_opt_dir }}/certs"
+minio_server_data_dir: "{{ minio_server_opt_dir }}/data"
+minio_env_file: "{{ minio_server_opt_dir }}/minio.env"
 
 minio_server_kes_client_key: "{{ minio_server_certs_dir }}/kes-client.key"
 minio_server_kes_client_cert: "{{ minio_server_certs_dir }}/kes-client.crt"
@@ -47,4 +48,4 @@ minio_mc_bin_info_map:
         sha256sum:
             "RELEASE.2024-05-09T17-04-24Z": 3af6501fd9b36780ce6715290f84458480eada7ff4ca4d26a593ec04592bbf3d
 minio_mc_version: RELEASE.2024-05-09T17-04-24Z
-minio_mc_config_dir: "{{ minio_server_home }}/.mc"
+minio_mc_config_dir: "{{ minio_server_home_dir }}/.mc"

@@ -7,7 +7,6 @@
       name: "{{ minio_kes_group }}"
       state: present
       system: true
-  register: minio_kes_tmp_group_creation
 
 - name: KES | Install | Create User
   ansible.builtin.user:
@@ -17,7 +16,6 @@
       create_home: false
       system: true
       shell: /bin/false
-  register: minio_kes_tmp_user_creation
 
 - name: KES | Install | Create Directories
   ansible.builtin.file:

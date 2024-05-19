@@ -7,17 +7,17 @@
       name: "{{ minio_server_group }}"
       state: present
       system: true
-  register: minio_server_tmp_group_creation
 
 - name: Minio | Install | Create User
   ansible.builtin.user:
       name: "{{ minio_server_user }}"
       group: "{{ minio_server_group }}"
       state: present
-      create_home: false
+      create_home: true
+      home: "{{ minio_server_home_dir }}"
+      move_home: true
       system: true
       shell: /bin/false
-  register: minio_server_tmp_user_creation
 
 - name: Minio | Install | Download binary
   ansible.builtin.get_url:
@@ -106,7 +106,7 @@
 
 - name: Minio | Install | Write MC Certificates
   ansible.builtin.copy:
-      content: "{{ minio_server_tmp_certificate.data.data.ca_chain | join('\n') }}"
+      content: "{{ minio_server_tmp_certificate.data.data.ca_chain | join('\n') }}\n"
       dest: "{{ minio_mc_config_dir }}/certs/CAs/server-ca.crt"
       owner: "{{ minio_server_user }}"
       group: "{{ minio_server_group }}"
@@ -185,3 +185,14 @@
       daemon_reload: true
       daemon_reexec: true
       enabled: true
+
+- name: Minio | Install | Set MC alias
+  ansible.builtin.command: "/usr/local/bin/mc alias set minio \
+      https://{{ minio_server_ips | first }}:{{ minio_server_port }} {{ minio_server_root_user }} {{ minio_server_root_password }}"
+  changed_when: true
+  become: true
+  become_user: "{{ minio_server_user }}"
+  environment:
+      SERVER_PORT: "{{ minio_server_port }}"
+      ROOT_USER: "{{ minio_server_root_user }}"
+      ROOT_PASSWORD: "{{ minio_server_root_password }}"
