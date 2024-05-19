@@ -27,6 +27,7 @@
   loop:
       - "/etc/systemd/system/{{ minio_kes_systemd_service_name }}"
       - "/usr/local/bin/kes"
+      - "/tmp/kes-admin-client-cert.pem"
       - "{{ minio_kes_home }}"
 
 - name: KES | Uninstall | Delete User

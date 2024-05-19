@@ -1,5 +1,7 @@
 ---
 all:
+    vars:
+        pv_global_config_env_debug: "{{ lookup('ansible.builtin.env', 'DEBUG', default=false) | bool }}"
     hosts:
         localhost:
             ansible_connection: local

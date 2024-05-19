@@ -1,12 +1,19 @@
 ---
 - name: KES
   hosts: kes_servers
-  gather_facts: true
+  gather_facts: false
   become: true
   timeout: 30
   gather_timeout: 30
   any_errors_fatal: true
+  no_log: "{{ not pv_global_config_env_debug | bool | default(false) }}"
   tasks:
+      - name: KES | Gather Facts
+        tags:
+            - never
+            - kes_install
+        ansible.builtin.setup:
+
       - name: KES | Assert
         tags:
             - never
@@ -30,12 +37,19 @@
 
 - name: Minio
   hosts: minio_servers
-  gather_facts: true
+  gather_facts: false
   become: true
   timeout: 30
   gather_timeout: 30
   any_errors_fatal: true
+  no_log: "{{ not pv_global_config_env_debug | bool | default(false) }}"
   tasks:
+      - name: Minio | Gather Facts
+        tags:
+            - never
+            - minio_install
+        ansible.builtin.setup:
+
       - name: Minio | Set minio_server_kes_secret_id_vault
         tags:
             - never
@@ -53,7 +67,7 @@
         delegate_to: localhost
         community.hashi_vault.vault_kv2_get:
             url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
-            path: "minio-kes/admin-key-id/{{ minio_server_kes_secret_id_vault }}"
+            path: "minio-kes/{{ minio_server_kes_secret_id_vault }}/admin-key-id"
             token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
             validate_certs: true
         register: minio_server_kes_secret_dict

@@ -105,8 +105,8 @@
       - content: "{{ kes_tmp_admin_client_cert_res.data.data.certificate }}\n\
             {{ kes_tmp_admin_client_cert_res.data.data.ca_chain | join('\n') }}"
         dest: "/tmp/kes-admin-client-cert.pem"
-        owner: "{{ minio_server_user }}"
-        group: "{{ minio_server_group }}"
+        owner: "{{ minio_kes_user }}"
+        group: "{{ minio_kes_user }}"
       # - content: "{{ kes_tmp_admin_client_cert_res.data.data.private_key }}"
       #   dest: "/tmp/kes-admin-client-cert.key"
       #   owner: "{{ minio_kes_user }}"
@@ -202,7 +202,8 @@
   delegate_to: localhost
   community.hashi_vault.vault_kv2_write:
       url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
-      path: "minio-kes/admin-key-id/{{ inventory_hostname }}"
+      path: "minio-kes/{{ inventory_hostname }}/admin-key-id"
+      engine_mount_point: "secret"
       data:
           admin_cert: "{{ kes_tmp_admin_client_cert_res.data.data.certificate }}\n\
               {{ kes_tmp_admin_client_cert_res.data.data.ca_chain | join('\n') }}"
