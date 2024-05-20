@@ -13,21 +13,21 @@
             - never
             - kes_install
         ansible.builtin.import_tasks:
-            file: tasks/kes_asserts.yml
+            file: tasks/kes/asserts.yml
 
       - name: KES | Install
         tags:
             - never
             - kes_install
         ansible.builtin.import_tasks:
-            file: tasks/kes_install.yml
+            file: tasks/kes/install.yml
 
       - name: KES | Uninstall
         tags:
             - never
             - kes_uninstall
         ansible.builtin.import_tasks:
-            file: tasks/kes_uninstall.yml
+            file: tasks/kes/uninstall.yml
 
 - name: Minio
   hosts: minio_servers
