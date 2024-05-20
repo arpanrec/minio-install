@@ -54,3 +54,5 @@ minio_mc_version: RELEASE.2024-05-09T17-04-24Z
 
 # minio_server_root_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=40,
 # chars=['ascii_letters', 'digits']) }}"
+
+# minio_server_uninstall_remove_data_dir: false
