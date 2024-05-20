@@ -13,8 +13,7 @@
       name: "{{ minio_server_user }}"
       group: "{{ minio_server_group }}"
       state: present
-      create_home: true
-      home: "{{ minio_server_home_dir }}"
+      create_home: false
       move_home: true
       system: true
       shell: /bin/false
@@ -41,6 +40,11 @@
           {{ minio_mc_bin_info_map[ansible_architecture]['minio_server_arch'] }}/archive/mc.\
           {{ minio_mc_version }}"
 
+- name: Minio | Install | MC temp directory
+  ansible.builtin.tempfile:
+      state: directory
+  register: minio_mc_temp_dir
+
 - name: Minio | Install | Create Directories
   ansible.builtin.file:
       path: "{{ item }}"
@@ -52,7 +56,8 @@
       - "{{ minio_server_certs_dir }}"
       - "{{ minio_server_certs_dir }}/CAs"
       - "{{ minio_server_data_dir }}"
-      - "{{ minio_mc_config_dir }}/certs/CAs"
+      - "{{ minio_mc_temp_dir.path }}"
+      - "{{ minio_mc_temp_dir.path }}/certs/CAs"
 
 - name: Minio | Install | Get Minio Server Certificates from Vault
   become: false
@@ -107,16 +112,10 @@
 - name: Minio | Install | Write MC Certificates
   ansible.builtin.copy:
       content: "{{ minio_server_tmp_certificate.data.data.ca_chain | join('\n') }}\n"
-      dest: "{{ minio_mc_config_dir }}/certs/CAs/server-ca.crt"
+      dest: "{{ minio_mc_temp_dir.path }}/certs/CAs/server-ca.crt"
       owner: "{{ minio_server_user }}"
       group: "{{ minio_server_group }}"
       mode: "0777"
-
-- name: Minio | Install | Create User and Password
-  ansible.builtin.set_fact:
-      minio_server_root_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=40,
-          chars=['ascii_letters', 'digits']) }}"
-      minio_server_root_user: "{{ lookup('community.general.random_string', special=false, length=12) }}"
 
 - name: Minio | Install | Write the Password to Vault
   become: false
@@ -186,13 +185,10 @@
       daemon_reexec: true
       enabled: true
 
-- name: Minio | Install | Set MC alias
-  ansible.builtin.command: "/usr/local/bin/mc alias set minio \
-      https://{{ minio_server_ips | first }}:{{ minio_server_port }} {{ minio_server_root_user }} {{ minio_server_root_password }}"
-  changed_when: true
+- name: Minio | Install | Create Admin Keys
   become: true
   become_user: "{{ minio_server_user }}"
   environment:
-      SERVER_PORT: "{{ minio_server_port }}"
-      ROOT_USER: "{{ minio_server_root_user }}"
-      ROOT_PASSWORD: "{{ minio_server_root_password }}"
+      MC_CONFIG_DIR: "{{ minio_mc_temp_dir.path }}"
+  ansible.builtin.import_tasks:
+      file: tasks/minio/install/admin_mc.yml

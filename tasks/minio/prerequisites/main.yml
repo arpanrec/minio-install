@@ -1,0 +1,37 @@
+---
+- name: Minio | Prerequisites | Create User
+  when: minio_server_root_user is not defined or minio_server_root_user | length == 0
+  ansible.builtin.set_fact:
+      minio_server_root_user: "{{ lookup('community.general.random_string', special=false, length=12) }}"
+
+- name: Minio | Prerequisites | Create Password
+  when: minio_server_root_password is not defined or minio_server_root_password | length == 0
+  ansible.builtin.set_fact:
+      minio_server_root_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=40,
+          chars=['ascii_letters', 'digits']) }}"
+
+- name: Minio | Prerequisites | Set minio_server_kes_secret_id_vault
+  when: minio_server_kes_secret_id_vault is not defined or minio_server_kes_secret_id_vault | length == 0
+  ansible.builtin.set_fact:
+      minio_server_kes_secret_id_vault: "{{ minio_server_kes_secret_id_vault | d(inventory_hostname)
+          | mandatory }}"
+
+- name: Minio | Prerequisites | Get KES Admin Key Id from Vault
+  become: false
+  delegate_facts: true
+  delegate_to: localhost
+  community.hashi_vault.vault_kv2_get:
+      url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
+      engine_mount_point: "secret"
+      path: "minio/kes/servers/{{ minio_server_kes_secret_id_vault }}/config"
+      token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
+      validate_certs: true
+  register: minio_server_kes_secret_dict
+  environment:
+      VAULT_CACERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
+      VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
+      VAULT_CLIENT_KEY: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[1] }}"
+
+- name: Minio | Prerequisites | Assert
+  ansible.builtin.import_tasks:
+      file: tasks/minio/prerequisites/asserts.yml

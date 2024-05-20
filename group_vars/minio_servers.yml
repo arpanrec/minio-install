@@ -1,7 +1,6 @@
 ---
 minio_server_group: minio
 minio_server_user: "{{ minio_server_group }}"
-minio_server_home_dir: "/home/{{ minio_server_user }}"
 minio_server_opt_dir: "/opt/{{ minio_server_user }}"
 minio_server_certs_dir: "{{ minio_server_opt_dir }}/certs"
 minio_server_data_dir: "{{ minio_server_opt_dir }}/data"
@@ -21,10 +20,11 @@ minio_server_hostnames: ["localhost"]
 minio_server_ips: ["127.0.0.1"]
 minio_server_port: 9000
 minio_server_console_port: 9001
-# minio_server_kes_secret_id_vault: "{{ minio_server_kes_secret_id_vault | d('inventory_hostname') | mandatory }}"
+
+minio_server_endpoint: "https://{{ minio_server_hostnames[0] }}:{{ minio_server_port }}"
+
 minio_server_kes_endpoint: "https://127.0.0.1:7373"
-# minio_server_root_user:
-# minio_server_root_password:
+
 minio_server_systemd_service_name: minio.service
 
 minio_server_bin_info_map:
@@ -48,4 +48,9 @@ minio_mc_bin_info_map:
         sha256sum:
             "RELEASE.2024-05-09T17-04-24Z": 3af6501fd9b36780ce6715290f84458480eada7ff4ca4d26a593ec04592bbf3d
 minio_mc_version: RELEASE.2024-05-09T17-04-24Z
-minio_mc_config_dir: "{{ minio_server_home_dir }}/.mc"
+# minio_server_kes_secret_id_vault: "{{ inventory_hostname }}"
+
+# minio_server_root_user: "{{ lookup('community.general.random_string', special=false, length=12) }}"
+
+# minio_server_root_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=40,
+# chars=['ascii_letters', 'digits']) }}"

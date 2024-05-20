@@ -1,10 +1,16 @@
 ---
-- name: Minio | MC | Create Password
+- name: Minio | Install | Admin MC | Set MC alias
+  ansible.builtin.command: "/usr/local/bin/mc alias set minio \
+      https://{{ minio_server_ips | first }}:{{ minio_server_port }} \
+      {{ minio_server_root_user }} {{ minio_server_root_password }}"
+  changed_when: true
+
+- name: Minio | Install | Admin MC | Create Password
   ansible.builtin.set_fact:
       minio_mc_admin_user_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=40,
           chars=['ascii_letters', 'digits']) }}"
 
-- name: Minio | MC | Get Admin User
+- name: Minio | Install | Admin MC | Get Admin User
   ansible.builtin.command:
       cmd: "/usr/local/bin/mc admin user info minio admin-{{ inventory_hostname }}"
   register: minio_tmp_mc_admin_user_exists
@@ -15,18 +21,18 @@
       minio_tmp_mc_admin_user_exists.stderr !=
         'mc: <ERROR> Unable to get user info. The specified user does not exist. (Specified user does not exist).'
 
-- name: Minio | MC | Delete Existing Admin User
+- name: Minio | Install | Admin MC | Delete Existing Admin User
   ansible.builtin.command:
       cmd: "/usr/local/bin/mc admin user rm minio admin-{{ inventory_hostname }}"
   changed_when: true
   when: minio_tmp_mc_admin_user_exists.rc == 0
 
-- name: Minio | MC | Create Admin User
+- name: Minio | Install | Admin MC | Create Admin User
   ansible.builtin.command:
       cmd: "/usr/local/bin/mc admin user add minio admin-{{ inventory_hostname }} {{ minio_mc_admin_user_password }}"
   changed_when: true
 
-- name: Minio | MC | Create replication service account
+- name: Minio | Install | Admin MC | Create replication service account
   ansible.builtin.command:
       cmd: "/usr/local/bin/mc admin user svcacct add \
           --name replication \
@@ -34,7 +40,7 @@
   changed_when: true
   register: minio_mc_replication_service_account
 
-- name: Minio | MC | Write Admin User Password to Vault
+- name: Minio | Install | Admin MC | Write Admin User Password to Vault
   become: false
   delegate_facts: true
   delegate_to: localhost
@@ -52,12 +58,12 @@
       VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
       VAULT_CLIENT_KEY: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[1] }}"
 
-- name: Minio | MC | Set Facts
+- name: Minio | Install | Admin MC | Set Facts
   ansible.builtin.set_fact:
       access_key: "{{ minio_mc_replication_service_account.stdout | from_json | json_query('accessKey') }}"
       secret_key: "{{ minio_mc_replication_service_account.stdout | from_json | json_query('secretKey') }}"
 
-- name: Minio | MC | Write replication keys account to Vault
+- name: Minio | Install | Admin MC | Write replication keys account to Vault
   become: false
   delegate_facts: true
   delegate_to: localhost

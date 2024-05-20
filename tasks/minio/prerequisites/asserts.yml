@@ -1,0 +1,42 @@
+---
+- name: Minio | Prerequisites | Assert | minio_server_hostnames
+  ansible.builtin.assert:
+      that:
+          - minio_server_hostnames | type_debug == 'list'
+          - minio_server_hostnames | length > 0
+      fail_msg: "minio_server_hostnames must be a list with at least one element"
+
+- name: Minio | Prerequisites | Assert | minio_server_ips
+  ansible.builtin.assert:
+      that:
+          - minio_server_ips | type_debug == 'list'
+          - minio_server_ips | length > 0
+      fail_msg: "minio_server_ips must be a list with at least one element"
+
+- name: Minio | Prerequisites | Assert | minio_server_kes_endpoint hostname
+  ansible.builtin.assert:
+      that:
+          - |+
+              minio_server_kes_endpoint | urlsplit('hostname')
+              in
+              (minio_server_kes_secret_dict.secret.hostnames + minio_server_kes_secret_dict.secret.ips)
+      fail_msg: "minio_server_kes_endpoint must be a valid URL with hostname or IP address"
+
+- name: Minio | Prerequisites | Assert | minio_server_kes_endpoint port
+  ansible.builtin.assert:
+      that:
+          - minio_server_kes_endpoint | urlsplit('port') == minio_server_kes_secret_dict.secret.port
+
+- name: Minio | Prerequisites | Assert | minio_server_endpoint hostname
+  ansible.builtin.assert:
+      that:
+          - |+
+              minio_server_endpoint | urlsplit('hostname')
+              in
+              (minio_server_hostnames + minio_server_ips)
+      fail_msg: "minio_server_endpoint must be a valid URL with hostname or IP address"
+
+- name: Minio | Prerequisites | Assert | minio_server_endpoint port
+  ansible.builtin.assert:
+      that:
+          - minio_server_endpoint | urlsplit('port') == minio_server_port
