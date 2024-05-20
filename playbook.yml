@@ -44,7 +44,7 @@
             - minio_install
             - kes_install
         ansible.builtin.import_tasks:
-            file: tasks/minio/main.yml
+            file: tasks/minio/install.yml
 
       - name: Minio | Uninstall
         tags:

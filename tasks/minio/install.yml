@@ -1,4 +1,8 @@
 ---
+- name: Minio | Prerequisites
+  ansible.builtin.import_tasks:
+      file: tasks/minio/prerequisites/main.yml
+
 - name: Minio | Install | Gather Facts
   ansible.builtin.setup:
 
@@ -40,11 +44,6 @@
           {{ minio_mc_bin_info_map[ansible_architecture]['minio_server_arch'] }}/archive/mc.\
           {{ minio_mc_version }}"
 
-- name: Minio | Install | MC temp directory
-  ansible.builtin.tempfile:
-      state: directory
-  register: minio_mc_temp_dir
-
 - name: Minio | Install | Create Directories
   ansible.builtin.file:
       path: "{{ item }}"
@@ -56,8 +55,6 @@
       - "{{ minio_server_certs_dir }}"
       - "{{ minio_server_certs_dir }}/CAs"
       - "{{ minio_server_data_dir }}"
-      - "{{ minio_mc_temp_dir.path }}"
-      - "{{ minio_mc_temp_dir.path }}/certs/CAs"
 
 - name: Minio | Install | Get Minio Server Certificates from Vault
   become: false
@@ -108,14 +105,6 @@
         dest: "{{ minio_server_kes_client_key }}"
       - content: "{{ minio_server_kes_secret_dict.secret.admin_ca }}\n"
         dest: "{{ minio_server_kes_client_ca }}"
-
-- name: Minio | Install | Write MC Certificates
-  ansible.builtin.copy:
-      content: "{{ minio_server_tmp_certificate.data.data.ca_chain | join('\n') }}\n"
-      dest: "{{ minio_mc_temp_dir.path }}/certs/CAs/server-ca.crt"
-      owner: "{{ minio_server_user }}"
-      group: "{{ minio_server_group }}"
-      mode: "0777"
 
 - name: Minio | Install | Write the Password to Vault
   become: false
@@ -184,11 +173,3 @@
       daemon_reload: true
       daemon_reexec: true
       enabled: true
-
-- name: Minio | Install | Create Admin Keys
-  become: true
-  become_user: "{{ minio_server_user }}"
-  environment:
-      MC_CONFIG_DIR: "{{ minio_mc_temp_dir.path }}"
-  ansible.builtin.import_tasks:
-      file: tasks/minio/install/admin_mc.yml

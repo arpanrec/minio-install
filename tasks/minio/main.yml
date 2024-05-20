@@ -1,8 +1,0 @@
----
-- name: Minio | Prerequisites
-  ansible.builtin.import_tasks:
-      file: tasks/minio/prerequisites/main.yml
-
-- name: Minio | Install
-  ansible.builtin.import_tasks:
-      file: tasks/minio/install/main.yml
