@@ -74,25 +74,33 @@ all:
                     x86_64:
                         minio_server_arch: amd64
                         sha256sum:
-                            "RELEASE.2024-05-10T01-41-38Z": bd3a3e65c48d35613fe1c556e77a18bccb8aee911b6293ca5f6112f73376c105
-                            "RELEASE.2024-06-13T22-53-53Z": 1568c0d8ab09eebaf444f78ec9cd85ce62b1a2aacbd92ec29c1ec779864811bc
+                            "RELEASE.2024-05-10T01-41-38Z":
+                                bd3a3e65c48d35613fe1c556e77a18bccb8aee911b6293ca5f6112f73376c105
+                            "RELEASE.2024-06-13T22-53-53Z":
+                                1568c0d8ab09eebaf444f78ec9cd85ce62b1a2aacbd92ec29c1ec779864811bc
                     aarch64:
                         minio_server_arch: arm64
                         sha256sum:
-                            "RELEASE.2024-05-10T01-41-38Z": b830c0862eadd2adb0db07118858fb917ac8002a9fde7a8eb0cc5234699ba40d
-                            "RELEASE.2024-06-13T22-53-53Z": e30af0de3db096a35d594e7e7fa501efd686cb3a3335f8576f36c7359ecde5a3
+                            "RELEASE.2024-05-10T01-41-38Z":
+                                b830c0862eadd2adb0db07118858fb917ac8002a9fde7a8eb0cc5234699ba40d
+                            "RELEASE.2024-06-13T22-53-53Z":
+                                e30af0de3db096a35d594e7e7fa501efd686cb3a3335f8576f36c7359ecde5a3
                 minio_server_version: RELEASE.2024-06-13T22-53-53Z
 
                 minio_mc_bin_info_map:
                     x86_64:
                         minio_server_arch: amd64
                         sha256sum:
-                            "RELEASE.2024-05-09T17-04-24Z": 360196aa51e7664996abbd3a522bdf4749188744a4d36d9bc0c4068d7dfad9e2
-                            "RELEASE.2024-06-12T14-34-03Z": bc91b2e313c8715fc84dd40fb208ab5244015d7a75b8c204a5547e8ee18a6dca
+                            "RELEASE.2024-05-09T17-04-24Z":
+                                360196aa51e7664996abbd3a522bdf4749188744a4d36d9bc0c4068d7dfad9e2
+                            "RELEASE.2024-06-12T14-34-03Z":
+                                bc91b2e313c8715fc84dd40fb208ab5244015d7a75b8c204a5547e8ee18a6dca
                     aarch64:
                         minio_server_arch: arm64
                         sha256sum:
-                            "RELEASE.2024-05-09T17-04-24Z": 3af6501fd9b36780ce6715290f84458480eada7ff4ca4d26a593ec04592bbf3d
-                            "RELEASE.2024-06-12T14-34-03Z": 78682be9b33313457c86dbb7c44e0b949c39bfce40ce01c240ab4ce6b355936e
+                            "RELEASE.2024-05-09T17-04-24Z":
+                                3af6501fd9b36780ce6715290f84458480eada7ff4ca4d26a593ec04592bbf3d
+                            "RELEASE.2024-06-12T14-34-03Z":
+                                78682be9b33313457c86dbb7c44e0b949c39bfce40ce01c240ab4ce6b355936e
                 minio_mc_version: RELEASE.2024-06-12T14-34-03Z
                 minio_mc_config_dir: "{{ minio_server_home }}/.mc"

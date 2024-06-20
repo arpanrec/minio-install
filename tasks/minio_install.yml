@@ -154,7 +154,8 @@
           MINIO_ROOT_PASSWORD={{ minio_server_root_password }}
           MINIO_REGION=us-east-1
           MINIO_VOLUMES={{ minio_server_data_dir }}
-          MINIO_OPTS="--address ':{{ minio_server_port }}' --console-address ':{{ minio_server_console_port }}' --certs-dir {{ minio_server_certs_dir }}"
+          MINIO_OPTS="--address ':{{ minio_server_port }}' --console-address ':{{
+            minio_server_console_port }}' --certs-dir {{ minio_server_certs_dir }}"
       dest: "{{ minio_env_file }}"
       owner: "{{ minio_server_user }}"
       group: "{{ minio_server_group }}"
