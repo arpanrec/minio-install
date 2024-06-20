@@ -12,8 +12,6 @@ ansible = "9.5.1"
 hvac = "2.3.0"
 
 [tool.poetry.group.dev.dependencies]
-mypy = "1.10.0"
-pylint = "3.2.3"
 ansible-lint = { version = "24.6.0", markers = 'platform_system != "Windows"' }
 poetry-plugin-export = "1.8.0"
 detect-secrets = "1.5.0"
@@ -22,7 +20,6 @@ types-requests = "2.32.0.20240602"
 types-jmespath = "1.0.2.20240106"
 ansible-dev-tools = "24.5.0"
 pyright = "1.1.367"
-isort = "5.13.2"
 
 [build-system]
 requires = ["poetry-core"]

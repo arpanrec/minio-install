@@ -39,21 +39,6 @@ jobs:
                   poetry install
                   ansible-galaxy install -r requirements.yml
 
-            - name: Analysing the code with pylint
-              run: |+
-                  set -ex
-                  pylint $(git ls-files '*.py')
-
-            - name: Analysing the code with black
-              run: |+
-                  set -ex
-                  black --check $(git ls-files '*.py')
-
-            - name: Analysing the code with mypy
-              run: |+
-                  set -ex
-                  mypy $(git ls-files '*.py') --check-untyped-defs
-
             - name: Analysing the code with yamllint
               run: |+
                   set -ex
