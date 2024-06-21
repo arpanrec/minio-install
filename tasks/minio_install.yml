@@ -137,6 +137,7 @@
           console_port: "{{ minio_server_console_port }}"
           server_version: "{{ minio_server_version }}"
           client_version: "{{ minio_mc_version }}"
+          preferred_mc_host: "{{ minio_server_preferred_mc_host }}"
   environment:
       VAULT_CACERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
       VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
@@ -186,7 +187,6 @@
       daemon_reload: true
       daemon_reexec: true
       enabled: true
-
 # - name: Minio | Install | Add to localhost
 #   delegate_to: localhost
 #   become: false
