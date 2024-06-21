@@ -124,7 +124,7 @@
   delegate_to: localhost
   community.hashi_vault.vault_kv2_write:
       url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
-      path: "minio/servers/{{ inventory_hostname }}/config"
+      path: "minio/clusters/{{ minio_cluster_name }}/servers/{{ inventory_hostname }}/config"
       token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
       validate_certs: true
       engine_mount_point: "secret"

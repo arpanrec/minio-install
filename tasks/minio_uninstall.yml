@@ -60,8 +60,8 @@
   delegate_facts: true
   delegate_to: localhost
   ansible.builtin.uri:
-      url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}/v1/secret/metadata/minio/servers/\
-          {{ inventory_hostname }}/config"
+      url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}/v1/secret/metadata/minio/clusters/\
+          {{ minio_cluster_name }}/servers/{{ inventory_hostname }}/config"
       method: DELETE
       status_code: 204
       headers:

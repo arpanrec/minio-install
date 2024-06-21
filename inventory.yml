@@ -43,6 +43,7 @@ all:
 
         minio_servers:
             vars:
+                minio_cluster_name: "main"
                 minio_server_kes_endpoint: "https://127.0.0.1:7373"
                 minio_server_group: minio
                 minio_server_user: "{{ minio_server_group }}"
