@@ -43,7 +43,6 @@
         tags:
             - never
             - minio_install
-            - kes_install
         ansible.builtin.import_tasks:
             file: tasks/minio_asserts.yml
 
@@ -51,7 +50,6 @@
         tags:
             - never
             - minio_install
-            - kes_install
         ansible.builtin.import_tasks:
             file: tasks/minio_install.yml
 

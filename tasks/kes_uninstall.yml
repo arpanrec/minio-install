@@ -40,3 +40,19 @@
       name: "{{ minio_kes_group }}"
       state: absent
       force: true
+
+- name: KES | Uninstall | Destroy KES Admin Key Id from Vault
+  become: false
+  delegate_facts: true
+  delegate_to: localhost
+  ansible.builtin.uri:
+      url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}/v1/secret/metadata/minio/kes/servers/\
+          {{ inventory_hostname }}/config"
+      method: DELETE
+      status_code: 204
+      headers:
+          X-Vault-Token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
+      validate_certs: true
+      ca_path: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
+      client_cert: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
+      client_key: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[1] }}"
