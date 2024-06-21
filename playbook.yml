@@ -8,7 +8,6 @@
   any_errors_fatal: true
   no_log: "{{ not pv_global_config_env_debug | bool | default(false) }}"
   tasks:
-
       - name: KES | Assert
         tags:
             - never
@@ -52,6 +51,25 @@
             - minio_install
         ansible.builtin.import_tasks:
             file: tasks/minio_install.yml
+
+      - name: Minio | Cluster Join # noqa: run-once[task]
+        delegate_to: localhost
+        become: false
+        run_once: true
+        tags:
+            - never
+            - minio_install
+            - cluster_join
+        ansible.builtin.script:
+            cmd: "{{ playbook_dir }}/minio_cluster_join.py"
+        environment:
+            VAULT_CACERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
+            VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
+            VAULT_CLIENT_KEY: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[1] }}"
+            VAULT_ADDR: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}"
+            VAULT_TOKEN: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
+            MINIO_CLUSTER_NAME: "{{ minio_cluster_name }}"
+        changed_when: true
 
       - name: Minio | Uninstall
         tags:

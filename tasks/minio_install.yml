@@ -139,6 +139,7 @@
           client_version: "{{ minio_mc_version }}"
           preferred_mc_host: "{{ minio_server_preferred_mc_host }}"
           ca_cert: "{{ minio_server_kes_secret_dict.secret.admin_ca }}"
+          server_cert: "{{ minio_server_kes_secret_dict.secret.admin_cert }}"
   environment:
       VAULT_CACERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
       VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
