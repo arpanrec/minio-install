@@ -133,11 +133,12 @@
           root_password: "{{ minio_server_root_password }}"
           ips: "{{ minio_server_ips }}"
           hostnames: "{{ minio_server_hostnames }}"
-          port: "{{ minio_server_port }}"
+          server_port: "{{ minio_server_port }}"
           console_port: "{{ minio_server_console_port }}"
           server_version: "{{ minio_server_version }}"
           client_version: "{{ minio_mc_version }}"
           preferred_mc_host: "{{ minio_server_preferred_mc_host }}"
+          ca_cert: "{{ minio_server_kes_secret_dict.secret.admin_ca }}"
   environment:
       VAULT_CACERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
       VAULT_CLIENT_CERT: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
@@ -188,8 +189,6 @@
       daemon_reexec: true
       enabled: true
 # - name: Minio | Install | Add to localhost
-#   delegate_to: localhost
-#   become: false
 #   ansible.builtin.command:
 #       argv:
 #           - mc
@@ -200,3 +199,6 @@
 #           - "{{ minio_server_root_user }}"
 #           - "{{ minio_server_root_password }}"
 #   changed_when: true
+#   retries: 3
+#   delay: 5
+# until: "mc alias list | grep -q {{ inventory_hostname }}"
