@@ -186,3 +186,17 @@
       daemon_reload: true
       daemon_reexec: true
       enabled: true
+
+# - name: Minio | Install | Add to localhost
+#   delegate_to: localhost
+#   become: false
+#   ansible.builtin.command:
+#       argv:
+#           - mc
+#           - alias
+#           - set
+#           - "{{ inventory_hostname }}"
+#           - "https://{{ minio_server_preferred_mc_host }}:{{ minio_server_port }}"
+#           - "{{ minio_server_root_user }}"
+#           - "{{ minio_server_root_password }}"
+#   changed_when: true
