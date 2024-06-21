@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "minio-install"
+version = "0.1.0"
+description = ""
+authors = ["arpan <arpan.rec@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+ansible = "9.5.1"
+hvac = "2.3.0"
+
+[tool.poetry.group.dev.dependencies]
+ansible-lint = { version = "24.6.0", markers = 'platform_system != "Windows"' }
+poetry-plugin-export = "1.8.0"
+detect-secrets = "1.5.0"
+types-pyyaml = "6.0.12.20240311"
+types-requests = "2.32.0.20240602"
+types-jmespath = "1.0.2.20240106"
+ansible-dev-tools = "24.5.0"
+pyright = "1.1.367"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,58 @@
+---
+- name: KES | Uninstall | Stop Systemd Service
+  ansible.builtin.systemd_service:
+      name: "{{ minio_kes_systemd_service_name }}"
+      state: stopped
+      daemon_reload: true
+      daemon_reexec: true
+      enabled: false
+      force: true
+  register: minio_kes_systemd_service_removed
+  failed_when: |+
+      minio_kes_systemd_service_removed.failed
+      and
+      minio_kes_systemd_service_removed.msg.find('Could not find the requested service') == -1
+
+- name: KES | Uninstall | Remove UFW
+  community.general.ufw:
+      rule: reject
+      port: "{{ minio_kes_port }}"
+      proto: tcp
+      state: enabled
+
+- name: KES | Uninstall | Remove Files
+  ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+  loop:
+      - "/etc/systemd/system/{{ minio_kes_systemd_service_name }}"
+      - "/usr/local/bin/kes"
+      - "{{ minio_kes_home }}"
+
+- name: KES | Uninstall | Delete User
+  ansible.builtin.user:
+      name: "{{ minio_kes_user }}"
+      state: absent
+      force: true
+
+- name: KES | Uninstall | Delete group
+  ansible.builtin.group:
+      name: "{{ minio_kes_group }}"
+      state: absent
+      force: true
+
+- name: KES | Uninstall | Destroy KES Admin Key Id from Vault
+  become: false
+  delegate_facts: true
+  delegate_to: localhost
+  ansible.builtin.uri:
+      url: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.url }}/v1/secret/metadata/minio/kes/servers/\
+          {{ inventory_hostname }}/config"
+      method: DELETE
+      status_code: 204
+      headers:
+          X-Vault-Token: "{{ hashicorp_vault_kv2_inventory.hvac_token }}"
+      validate_certs: true
+      ca_path: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.verify }}"
+      client_cert: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[0] }}"
+      client_key: "{{ hashicorp_vault_kv2_inventory.hvac_client_configuration.cert[1] }}"
